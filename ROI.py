@@ -83,8 +83,6 @@ class ROI:
                 ROI.COLOR_ANCHOR,
                 ROI.ANC_THICKNESS)
 
-        return self.img
-
 
 if __name__ == '__main__':
     myROI = ROI()
