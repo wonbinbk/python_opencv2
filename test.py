@@ -53,5 +53,17 @@ dst = imgAdjust.img_transform(img, tmp_pts, tar_pts)
 # plt.subplot(122), plt.imshow(tar)
 # plt.show()
 res = imgAdjust.img_diff(dst, tar)
-cv2.imshow(TITLE, res)
-cv2.waitKey(0)
+img_diff = []   # List of tuple (index, res_of_ROI)
+for index, rect in enumerate(myROI.rectangles):
+    img_diff.append((index, res[rect[0][1]:rect[1][1], rect[0][0]:rect[1][0]]))
+index_roi = [roi[0] for roi in img_diff if np.mean(roi[1]) > 10]
+for i in index_roi:
+    cv2.rectangle(
+        tar,
+        myROI.rectangles[i][0],
+        myROI.rectangles[i][1],
+        (0, 0, 255), 5)
+plt.subplot(221), plt.imshow(img)
+plt.subplot(222), plt.imshow(res, 'gray')
+plt.subplot(223), plt.imshow(tar)
+plt.show()
