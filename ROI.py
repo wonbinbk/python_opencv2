@@ -31,21 +31,30 @@ class ROI:
     def onMouse(self, event, x, y, flags, param):
         '''
         Mouse events' callback
+        self.mode == 1 : anchor points
+        self.mode == 0 : rectangles
         '''
-        if self.mode:
-            if event == cv2.EVENT_LBUTTONDOWN:
-                self.anchors.append((x, y))
-        elif event == cv2.EVENT_LBUTTONDOWN:
+        if event == cv2.EVENT_LBUTTONDOWN:
             self.ix, self.iy = x, y
             self.leftclicked = 1
-            self.rectangles.append([None, None])
+            if self.mode:
+                self.anchors.append([None, None])
+            else:
+                self.rectangles.append([None, None])
         elif event == cv2.EVENT_MOUSEMOVE and self.leftclicked:
             self.drawing = 1
-            self.rectangles.pop()
-            self.rectangles.append([(self.ix, self.iy), (x, y)])
+            if self.mode:
+                self.anchors.pop()
+                self.anchors.append([(self.ix, self.iy), (x, y)])
+            else:
+                self.rectangles.pop()
+                self.rectangles.append([(self.ix, self.iy), (x, y)])
         elif event == cv2.EVENT_LBUTTONUP:
             if not self.drawing:
-                self.rectangles.pop()
+                if self.mode:
+                    self.anchors.pop()
+                else:
+                    self.rectangles.pop()
             else:
                 self.drawing = 0
             self.leftclicked = 0
@@ -64,22 +73,10 @@ class ROI:
                 ROI.COLOR_RECTANGLE,
                 ROI.REC_THICKNESS)
         for anchor in self.anchors:
-            cv2.circle(
+            cv2.rectangle(
                 self.img,
-                anchor,
-                ROI.ANCHOR_SIZE,
-                ROI.COLOR_ANCHOR,
-                ROI.ANC_THICKNESS)
-            cv2.line(
-                self.img,
-                (anchor[0] - 2 * ROI.ANCHOR_SIZE, anchor[1]),
-                (anchor[0] + 2 * ROI.ANCHOR_SIZE, anchor[1]),
-                ROI.COLOR_ANCHOR,
-                ROI.ANC_THICKNESS)
-            cv2.line(
-                self.img,
-                (anchor[0], anchor[1] - 2 * ROI.ANCHOR_SIZE),
-                (anchor[0], anchor[1] + 2 * ROI.ANCHOR_SIZE),
+                anchor[0],
+                anchor[1],
                 ROI.COLOR_ANCHOR,
                 ROI.ANC_THICKNESS)
 
