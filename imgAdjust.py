@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-class img_adjust:
+class ImgAdjust:
 
     def img_matching(self, templates, target_image):
         '''
@@ -18,10 +18,7 @@ class img_adjust:
         return tar_pts
 
     def img_transform(self, image, tmp_pts, tar_pts):
-        '''
-        Return affine transformed image from image
-        using list of 3 points tmp_pts and tar_pts
-        '''
+        '''Return affine transformed image using 2 3-points lists'''
         # Make sure list is a numpy array of float32
         tmp_pts = np.array(tmp_pts, dtype=np.float32)
         tmp_pts = tmp_pts.reshape((-1, 1, 2))
@@ -35,9 +32,7 @@ class img_adjust:
         return dst
 
     def img_diff(self, dst, tar):
-        '''
-        Return a binary image based on different between dst and tar
-        '''
+        '''Return a binary image based on different between dst and tar'''
         dst_gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
         dst_blur = cv2.blur(dst_gray, (5, 5))
         _, dst_bin = cv2.threshold(dst_blur, 50, 200, cv2.THRESH_BINARY)
