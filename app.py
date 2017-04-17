@@ -7,39 +7,36 @@ import sys
 
 from ROI import ROI
 from imgAdjust import ImgAdjust
-from imutils.convenience import resize
-from timeit import default_timer as tm
 
 try:
-    img = cv2.imread(sys.argv[1], 1)
-    tar = cv2.imread(sys.argv[2], 1)
+    _IMG = sys.argv[1]
+    _TAR = sys.argv[2]
 except Exception as e:
-    print "Error: {}".format(e)
-    print __doc__
-    sys.exit(1)
-
-TITLE = 'Image'
-MIN_MEAN = 20
-RED = (0, 0, 255)
-_, W1, _ = img.shape
-# To speed up processing image, we need to scale down images
-# W, H is scaled image size
-W, H = 800, 600
-RATIO = W1 / float(W)
-img_copy = img.copy()
-img = resize(img, W)
-tar_copy = tar.copy()
-tar = resize(tar, W)
+    # print "Error: {}".format(e)
+    # print __doc__
+    # sys.exit(1)
+    _IMG = 'DeviceImg.bmp'
+    _TAR = 'EmptyImg.bmp'
+img = cv2.imread(_IMG, 1)
+img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+tar = cv2.imread(_TAR, 1)
+tar_gray = cv2.cvtColor(tar, cv2.COLOR_BGR2GRAY)
+_TITLE = 'Image'
+_MIN_MEAN = 20
+_RED = (0, 0, 255)
+_THICK = 2
+_LIMIT = 10     # threshold of mean binary
+H, W = img.shape[:2]
 myROI = ROI()
 imgAdjust = ImgAdjust()
-
-cv2.namedWindow(TITLE, cv2.WINDOW_NORMAL)
-cv2.resizeWindow(TITLE, W, H)
-cv2.setMouseCallback(TITLE, myROI.onMouse)
-cv2.imshow(TITLE, img_copy)
-
+cv2.namedWindow(_TITLE, cv2.WINDOW_NORMAL)
+cv2.resizeWindow(_TITLE, 1024, 768)
+cv2.moveWindow(_TITLE, 300, 300)
+cv2.setMouseCallback(_TITLE, myROI.onMouse)
+cv2.imshow(_TITLE, img)
+# Done show image & get rectangles + anchors
 while(True):
-    key = cv2.waitKey(1) & 0xFF
+    key = cv2.waitKey(100) & 0xFF
     if key == ord('a'):
         myROI.mode = 1
     elif key == ord('r'):
@@ -51,36 +48,29 @@ while(True):
             myROI.anchors.pop()
     elif key == ord('q'):
         break
-    myROI.img = myROI.drawing_anchors_and_rects(img_copy)
-    cv2.imshow(TITLE, myROI.img)
-start = tm()
-myROI.anchors = myROI.anchors[:3]   # Only 3 points needed
+    myROI.img = myROI.drawing_anchors_and_rects(img)
+    cv2.imshow(_TITLE, myROI.img)
+# Get templates
+myROI.anchors = myROI.anchors[:3]   # Need only 3 anchors
 templates = []
 for a in myROI.anchors:
-    tl = tuple([int(r / RATIO) for r in a[0]])
-    br = tuple([int(r / RATIO) for r in a[1]])
-    templates.append(img[tl[1]:br[1], tl[0]:br[0]])
-tmp_pts = [anchor[0] for anchor in myROI.anchors]
+    templates.append(img[a[0][1]:a[1][1], a[0][0]:a[1][0]])
+# Get template's top_left points
+tmp_pts = [a[0] for a in myROI.anchors]
+# Get target corresponded's top_left points
 tar_pts = imgAdjust.img_matching(templates, tar)
-dst = imgAdjust.img_transform(img_copy, tmp_pts, tar_pts)
-res = imgAdjust.img_diff(dst, tar_copy)
-
-img_diff = []   # List of tuple (index, res_of_ROI)
-for index, rect in enumerate(myROI.rectangles):
-    tl = rect[0]
-    br = rect[1]
-    img_diff.append((index, res[tl[1]:br[1], tl[0]:br[0]]))
-# TODO: SOMETHING WRONG HERE
-index_roi = [roi[0] for roi in img_diff if np.mean(roi[1]) > MIN_MEAN]
-for i in index_roi:
-    tl = myROI.rectangles[i][0]
-    br = myROI.rectangles[i][1]
-    cv2.rectangle(tar_copy, tl, br, RED, 2)
-stop = tm()
-print 'It took {}(s)'.format(stop - start)
+# Affine transform img to tar
+dst = imgAdjust.img_transform(img_gray, tmp_pts, tar_pts)
+# Get binary different image
+res = imgAdjust.img_diff(dst, tar_gray)
+bingo = [r for r in myROI.rectangles if np.mean(
+        res[r[0][1]:r[1][1], r[0][0]:r[1][0]]) > _LIMIT]
+img_display = img.copy()
+for b in bingo:
+    cv2.rectangle(img_display, b[0], b[1], _RED, _THICK)
+cv2.imshow(_TITLE, img_display)
 while(True):
-    cv2.imshow(TITLE, tar_copy)
-    if cv2.waitKey(500) & 0xFF == ord('q'):
+    key = cv2.waitKey(100) & 0xFF
+    if key == ord('q'):
         break
-
-cv2.destroyWindow(TITLE)
+cv2.destroyAllWindows()

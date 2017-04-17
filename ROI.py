@@ -9,20 +9,18 @@ output:             + array of ROIs
                     + array of anchor points
 '''
 import cv2
-import sys
 
 
 class ROI:
     COLOR_RECTANGLE = (0, 255, 0)
     COLOR_ANCHOR = (0, 255, 255)
-    REC_THICKNESS = 8
-    ANC_THICKNESS = 3
-    ANCHOR_SIZE = 20
+    REC_THICKNESS = 2
+    ANC_THICKNESS = 2
 
     def __init__(self):
         self.anchors = []
         self.rectangles = []
-        self.mode = 0
+        self.mode = 1
         self.drawing = 0
         self.ix, self.iy = -1, -1
         self.leftclicked = 0
@@ -79,9 +77,11 @@ class ROI:
                 anchor[1],
                 ROI.COLOR_ANCHOR,
                 ROI.ANC_THICKNESS)
+        return self.img
 
 
 if __name__ == '__main__':
+    import sys
     myROI = ROI()
     img = cv2.imread(sys.argv[1], 1)
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
