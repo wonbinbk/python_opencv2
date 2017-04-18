@@ -12,10 +12,10 @@ class ImgAdjust:
         tar_pts = []
         for temp in templates:
             h, w = temp.shape[:2]
-            res = cv2.matchTemplate(target_image, temp, cv2.TM_CCOEFF)
+            res = cv2.matchTemplate(target_image, temp, cv2.TM_CCORR_NORMED)
             _, _, _, nw = cv2.minMaxLoc(res)
             tar_pts.append(nw)
-
+# TODO: limit search area
         return tar_pts
 
     def img_transform(self, image, tmp_pts, tar_pts):
