@@ -12,6 +12,7 @@ import pickle
 from ROI import ROI
 from imgAdjust import ImgAdjust
 from misc import createWindow
+from misc import _inspect_image
 
 _TITLE = 'Image'
 _MIN_MEAN = 20
@@ -33,22 +34,53 @@ tar_gray = cv2.cvtColor(tar, cv2.COLOR_BGR2GRAY)
 myROI = ROI()
 ImgAdjust = ImgAdjust()
 img_name = _IMG[:-4]
-with open(''.join([img_name, '.anc']), 'rb') as f:
-    myROI.anchors = pickle.load(f)
-with open(''.join([img_name, '.roi']), 'rb') as f:
-    myROI.rectangles = pickle.load(f)
+try:
+    with open(''.join([img_name, '.anc']), 'rb') as f:
+        myROI.anchors = pickle.load(f)
+except IOError as e:
+    print "File " + img_name + ".anc" " not found."
+    print "You need to run file anchors.py first"
+    raise e
+    sys.exit(1)
+try:
+    with open(''.join([img_name, '.roi']), 'rb') as f:
+        myROI.rectangles = pickle.load(f)
+except IOError as e:
+    print "File " + img_name + ".roi" " not found."
+    print "Using empty list of rectangles now"
+    print "For testing purpose only."
+    myROI.rectangles = []
+
 templates, tmp_pts = [], []
 for i, a in enumerate(myROI.anchors):
     templates.append(cv2.imread("template {}.png".format(i+1), 1))
     tmp_pts.append(a[0])
+
+# -----------------------------------------------
+# TESTING: draw template boundary in target_image
+temp_size = [t.shape[:2] for t in templates]
 tar_pts = ImgAdjust.img_matching(templates, tar)
+tar_anchors = tar.copy()
+for i, t in enumerate(temp_size):
+    cv2.rectangle(
+        tar_anchors,
+        (tar_pts[i][0] + t[1], tar_pts[i][1]),
+        (tar_pts[i][0], tar_pts[i][1] + t[0]),
+        (255, 255, 0),
+        2)
+_inspect_image('Tar Anchors', tar_anchors, 1024, 768)
+# -----------------------------------------------
 dst = ImgAdjust.img_transform(img_gray, tmp_pts, tar_pts)
-res = ImgAdjust.img_diff(dst, tar_gray)
+_inspect_image('Transform', dst, 1024, 768)
+res = dst - tar_gray
+_inspect_image('Binary', res, 1024, 768)
 bingo = [r for r in myROI.rectangles if np.mean(
         res[r[0][1]:r[1][1], r[0][0]:r[1][0]]) > _LIMIT]
 for b in bingo:
     cv2.rectangle(tar, b[0], b[1], _RED, _THICK)
 createWindow(_TITLE, 1024, 768)
+# img_dict = {"Anchors Detect": tar_anchors, "Img Transform": dst,
+#             }
 cv2.imshow(_TITLE, tar)
 while(True):
     key = cv2.waitKey(100) & 0xFF
