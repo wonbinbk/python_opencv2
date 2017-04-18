@@ -7,6 +7,7 @@ Output: - images of missing components
 
 import cv2
 import numpy as np
+from numpy import linalg as LA
 import sys
 import pickle
 from ROI import ROI
@@ -22,7 +23,7 @@ _THICK = 2
 try:
     _IMG = sys.argv[2]
     _TAR = sys.argv[1]
-    _LIMIT = int(sys.argv[3])
+    _LIMIT = float(sys.argv[3])
 except Exception as e:
     print "Error: {}".format(e)
     print __doc__
@@ -72,15 +73,20 @@ _inspect_image('Tar Anchors', tar_anchors, 1024, 768)
 # -----------------------------------------------
 dst = ImgAdjust.img_transform(img_gray, tmp_pts, tar_pts)
 _inspect_image('Transform', dst, 1024, 768)
-res = dst - tar_gray
-_inspect_image('Binary', res, 1024, 768)
+res = abs(np.asarray(dst, 'int16') - np.asarray(tar_gray, 'int16'))
+_inspect_image('Tar gray', tar_gray, 1024, 768)
+res = np.asarray(res, 'uint8')
+_inspect_image('Result', res, 1024, 768)
+_, res_binary = cv2.threshold(res, 50, 200, cv2.THRESH_BINARY)
+_inspect_image('Result Binary', res_binary, 1024, 768)
+bingo = []
+# TODO: ROI points pick
+# TODO: method to pick ROI
 bingo = [r for r in myROI.rectangles if np.mean(
         res[r[0][1]:r[1][1], r[0][0]:r[1][0]]) > _LIMIT]
 for b in bingo:
     cv2.rectangle(tar, b[0], b[1], _RED, _THICK)
 createWindow(_TITLE, 1024, 768)
-# img_dict = {"Anchors Detect": tar_anchors, "Img Transform": dst,
-#             }
 cv2.imshow(_TITLE, tar)
 while(True):
     key = cv2.waitKey(100) & 0xFF
