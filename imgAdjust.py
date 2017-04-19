@@ -34,17 +34,15 @@ class ImgAdjust:
 
     def img_diff(self, dst, tar):
         '''Return a binary image based on different between dst and tar'''
-        # dst_gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
-        dst_blur = cv2.blur(dst, (5, 5))
-        _, dst_bin = cv2.threshold(dst_blur, 50, 200, cv2.THRESH_BINARY)
-        # tar_gray = cv2.cvtColor(tar, cv2.COLOR_BGR2GRAY)
-        tar_blur = cv2.blur(tar, (5, 5))
-        _, tar_bin = cv2.threshold(tar_blur, 50, 200, cv2.THRESH_BINARY)
-        res = cv2.bitwise_xor(tar_bin, dst_bin)
+        # _, dst_bin = cv2.threshold(dst, 50, 200, cv2.THRESH_BINARY)
+        # _, tar_bin = cv2.threshold(tar, 50, 200, cv2.THRESH_BINARY)
+        res = cv2.absdiff(tar, dst)
 
         return res
 
-    def find_ROI(res, rectangles, lower_limit):
+# TODO: find_ROI method and how to find correct lower limit.
+# SOLUTION: cv2.absdiff(img1, img2).sum() or cv2.norm(img1, img2, cv2.NORM_L1)
+    def find_ROI(self, res, rectangles, lower_limit):
         '''Return ROI list that has mean > lower_limit'''
         return [r for r in rectangles if np.mean(
                 res[r[0][1]:r[1][1], r[0][0]:r[1][0]]) > lower_limit]

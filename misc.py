@@ -29,7 +29,11 @@ def createWindow(TITLE, W, H, mouseCallBack=None):
         cv2.setMouseCallback(TITLE, mouseCallBack)
 
 
+<<<<<<< HEAD
 def _inspect_image(TITLE, img, W, H):
+=======
+def _inspect_image(img, TITLE='Image', W=1024, H=768):
+>>>>>>> test_bed
     createWindow(TITLE, W, H)
     cv2.imshow(TITLE, img)
     while(True):
@@ -37,3 +41,8 @@ def _inspect_image(TITLE, img, W, H):
         if key == ord('q'):
             cv2.destroyWindow(TITLE)
             break
+<<<<<<< HEAD
+=======
+        elif key == ord('w'):
+            break
+>>>>>>> test_bed
