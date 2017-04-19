@@ -79,6 +79,17 @@ class ROI:
                 ROI.ANC_THICKNESS)
         return self.img
 
+    def points_sort(self, coordinate_list):
+        '''Return a re-arrange or re-calculate coordinate list
+        In order: [top-left, bottom_right]'''
+        new_list = []
+        for r in coordinate_list:
+            x1, x2 = min(r[0][0], r[1][0]), max(r[0][0], r[1][0])
+            y1, y2 = min(r[0][1], r[1][1]), max(r[0][1], r[1][1])
+            new_list.append([(x1, y1), (x2, y2)])
+
+        return new_list
+
 
 if __name__ == '__main__':
     import sys

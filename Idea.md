@@ -1,4 +1,0 @@
-- Int16
-- -
-- Normalized of ROI.
-- 
