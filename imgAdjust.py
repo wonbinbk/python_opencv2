@@ -5,17 +5,14 @@ import numpy as np
 class ImgAdjust:
 
     def img_matching(self, templates, target_image):
-        '''
-        Return a list of Top_left point of matched area of templates found in
-        target_image (list of nw)
-        '''
+        '''Return a list of Top_left point of matched area of templates found in
+        target_image (list of nw)'''
         tar_pts = []
         for temp in templates:
             h, w = temp.shape[:2]
             res = cv2.matchTemplate(target_image, temp, cv2.TM_CCORR_NORMED)
             _, _, _, nw = cv2.minMaxLoc(res)
             tar_pts.append(nw)
-# TODO: limit search area
         return tar_pts
 
     def img_transform(self, image, tmp_pts, tar_pts):
@@ -34,14 +31,10 @@ class ImgAdjust:
 
     def img_diff(self, dst, tar):
         '''Return a binary image based on different between dst and tar'''
-        # _, dst_bin = cv2.threshold(dst, 50, 200, cv2.THRESH_BINARY)
-        # _, tar_bin = cv2.threshold(tar, 50, 200, cv2.THRESH_BINARY)
         res = cv2.absdiff(tar, dst)
 
         return res
 
-# TODO: find_ROI method and how to find correct lower limit.
-# SOLUTION: cv2.absdiff(img1, img2).sum() or cv2.norm(img1, img2, cv2.NORM_L1)
     def find_ROI(self, res, rectangles, lower_limit):
         '''Return ROI list that has mean > lower_limit'''
         return [r for r in rectangles if np.mean(
