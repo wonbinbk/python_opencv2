@@ -30,6 +30,7 @@ def createWindow(TITLE, W, H, mouseCallBack=None):
 
 
 def _inspect_image(img, TITLE='Image', W=1024, H=768):
+    '''Convenience method to display image and close when 'q' is pressed'''
     createWindow(TITLE, W, H)
     cv2.imshow(TITLE, img)
     while(True):

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''Show the active ROIs of the target image
 
 Syntax: python run.py img_file_name target_file_name -t/--threshold THRESHOLD
@@ -54,10 +55,10 @@ with open(_ROI_FILE, 'rb') as f:
     myROI.rectangles = pickle.load(f)
 templates, tmp_pts = [], []
 for i, a in enumerate(myROI.anchors):
-    templates.append(cv2.imread("template {}.png".format(i+1), 1))
+    tmp = cv2.imread("template {}.png".format(i+1), 1)
+    templates.append(tmp)
     tmp_pts.append(a[0])
-temp_size = [t.shape[:2] for t in templates]
-tar_pts = ImgAdjust.img_matching(templates, tar)
+tar_pts = ImgAdjust.img_matching(templates, tmp_pts, tar)
 dst = ImgAdjust.img_transform(img_gray, tmp_pts, tar_pts)
 bingo = []
 left_over = []
@@ -91,4 +92,3 @@ for j, r in enumerate(left_over):
                 _GREEN,
                 2)      # THICKNESS of Text
 _inspect_image(tar, _TITLE, 1024, 768)
-cv2.destroyWindow(_TITLE)

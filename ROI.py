@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 ROI.py
 input: target image
@@ -62,22 +63,22 @@ class ROI:
         Draw rectangles and points (anchors) on an input image
         Return: output image with rectangles and points
         '''
-        self.img = img.copy()
+        img_display = img.copy()
         for rect in self.rectangles:
             cv2.rectangle(
-                self.img,
+                img_display,
                 rect[0],
                 rect[1],
                 ROI.COLOR_RECTANGLE,
                 ROI.REC_THICKNESS)
         for anchor in self.anchors:
             cv2.rectangle(
-                self.img,
+                img_display,
                 anchor[0],
                 anchor[1],
                 ROI.COLOR_ANCHOR,
                 ROI.ANC_THICKNESS)
-        return self.img
+        return img_display
 
     def points_sort(self, coordinate_list):
         '''Return a re-arrange or re-calculate coordinate list

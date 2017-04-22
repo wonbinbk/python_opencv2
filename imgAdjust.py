@@ -1,18 +1,34 @@
+#!/usr/bin/env python
 import cv2
 import numpy as np
 
 
 class ImgAdjust:
 
-    def img_matching(self, templates, target_image):
+    def __init__(self):
+        self._ERROR = 100
+
+    def img_matching(self, templates, tmp_pts, tar_img):
         '''Return a list of Top_left point of matched area of templates found in
         target_image (list of nw)'''
+        # TODO: Re-code for more pythonic
+        # The code works but look stupid.
         tar_pts = []
-        for temp in templates:
+        H, W = tar_img.shape[:2]
+        for i, temp in enumerate(templates):
             h, w = temp.shape[:2]
-            res = cv2.matchTemplate(target_image, temp, cv2.TM_CCORR_NORMED)
+            tl = [max(0, z - self._ERROR) for z in tmp_pts[i]]
+            br = [0, 0]
+            br[0] = min(W, tmp_pts[i][0] + w + self._ERROR)
+            br[1] = min(H, tmp_pts[i][1] + h + self._ERROR)
+            res = cv2.matchTemplate(tar_img[tl[1]:br[1], tl[0]:br[0]],
+                                    temp,
+                                    cv2.TM_CCORR_NORMED)
             _, _, _, nw = cv2.minMaxLoc(res)
-            tar_pts.append(nw)
+            NW = [0, 0]
+            NW[0] = nw[0] + tl[0]
+            NW[1] = nw[1] + tl[1]
+            tar_pts.append(NW)
         return tar_pts
 
     def img_transform(self, image, tmp_pts, tar_pts):
